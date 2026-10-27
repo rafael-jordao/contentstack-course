@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ContentstackImage } from "@/components/contentstack-image";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -23,9 +23,10 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
     <Card className="relative pt-0">
       <div className="relative aspect-video w-full bg-muted">
         {post.cover_image?.url ? (
-          <Image
-            src={post.cover_image.url}
+          <ContentstackImage
+            asset={post.cover_image}
             alt={post.cover_image.title ?? post.blog_post_title}
+            width={800}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover"

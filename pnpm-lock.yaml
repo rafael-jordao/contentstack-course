@@ -14,6 +14,9 @@ importers:
       '@contentstack/delivery-sdk':
         specifier: ^5.6.1
         version: 5.6.1
+      '@contentstack/utils':
+        specifier: ^1.9.1
+        version: 1.9.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

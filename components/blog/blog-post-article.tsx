@@ -1,5 +1,5 @@
-import Image from "next/image";
-import { RichText } from "@/components/rich-text";
+import { ContentstackImage } from "@/components/contentstack-image";
+import { RichTextRenderer } from "@/components/rich-text-renderer";
 import type { BlogPost } from "@/lib/content/blog-post";
 import { formatLongDate } from "@/lib/format-date";
 
@@ -26,20 +26,21 @@ export function BlogPostArticle({ post }: BlogPostArticleProps) {
         )}
       </header>
 
-      {post.cover_image?.url && (
-        <Image
-          src={post.cover_image.url}
+      {post.cover_image && (
+        <ContentstackImage
+          asset={post.cover_image}
           alt={post.cover_image.title ?? post.blog_post_title}
           width={1200}
           height={630}
           className="mt-12 h-auto w-full rounded"
-          priority
+          preload
         />
       )}
 
-      <RichText
-        entry={post}
-        path="body"
+      <RichTextRenderer
+        json={post.body}
+        uid={post.uid}
+        embeddedItems={post._embedded_items}
         className="prose mt-12 dark:prose-invert [&_p]:mb-6"
       />
     </article>
