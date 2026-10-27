@@ -27,7 +27,10 @@ CONTENTSTACK_DELIVERY_TOKEN=cs...        # Settings > Tokens > Delivery Token
 CONTENTSTACK_ENVIRONMENT=development     # must match a Contentstack environment
 CONTENTSTACK_REGION=EU                   # NA | EU | AU | AZURE_NA | AZURE_EU | GCP_NA | GCP_EU
 CONTENTSTACK_WEBHOOK_SECRET=...          # shared with the Contentstack webhook
+SITE_URL=https://example.com             # optional, see below
 ```
+
+`SITE_URL` is the absolute origin used by `robots.txt`, `sitemap.xml`, `llms.txt`, the AI catalog and `metadataBase`. It falls back to `VERCEL_PROJECT_PRODUCTION_URL` and then to `http://localhost:3000`. It is read **at build time**, because those routes are prerendered: setting it only at runtime leaves localhost urls baked into the output.
 
 `CONTENTSTACK_REGION` is required on purpose. The SDK defaults to the US data center, so an unset region silently points a non-US stack at the wrong host.
 
@@ -126,6 +129,22 @@ Every adapter calls `cacheLife("content")` and `cacheTag(...)`, so the window is
 
 The route verifies a `Bearer` token against `CONTENTSTACK_WEBHOOK_SECRET` with a timing-safe digest comparison, and ignores payloads whose environment does not match `CONTENTSTACK_ENVIRONMENT`. Response codes are diagnostic: **401** means the secret diverges, **500** means it is unset on the server, and `{"revalidated": false, "reason": "ignored"}` means the environment did not match.
 
+## Discovery routes
+
+| Route | Source | Purpose |
+|---|---|---|
+| `/robots.txt` | `app/robots.ts` | Allows crawlers, disallows `/api/`, points at the sitemap |
+| `/sitemap.xml` | `app/sitemap.ts` | Every `page` url plus `/blog` and each post, with `lastModified` |
+| `/llms.txt` | `app/llms.txt/route.ts` | The [llmstxt.org](https://llmstxt.org) summary, listing pages and articles |
+| `/.well-known/ai-catalog.json` | `app/api/ai-catalog/route.ts` | Agentic Resource Discovery manifest, also served at `/.well-known/ard.json` |
+
+Two details that are easy to get wrong:
+
+- The ARD `Agentmap:` directive is **not** in `robots.txt`, because Lighthouse reports the file as invalid when it is present. The catalog is advertised through `<link rel="ai-catalog">` in the root layout instead.
+- App Router ignores folders starting with a dot, so the `.well-known` paths are rewrites to a normal route rather than files or route segments.
+
+`entries` in the catalog is empty on purpose: the site exposes no agent-facing API, and the spec allows an empty list. Inventing entries would make the manifest a lie that validates.
+
 ## Design system
 
 Tokens live in `app/globals.css` on top of the shadcn set.
@@ -149,7 +168,7 @@ Images go through a custom `next/image` loader that rewrites each srcset entry i
 pnpm test
 ```
 
-160 tests across 23 files, covering pure helpers, the data layer with the SDK mocked, blog and layout components, section rendering, webhook payload resolution, and the error and empty states.
+168 tests across 24 files, covering pure helpers, the data layer with the SDK mocked, blog and layout components, section rendering, webhook payload resolution, and the error and empty states.
 
 Two deliberate choices in `vitest.setup.ts`:
 
