@@ -7,6 +7,10 @@ import {
   type FindEntriesOptions,
   type JsonRteDocument,
 } from "@/lib/contentstack";
+import {
+  createPreviewClient,
+  type LivePreviewQuery,
+} from "@/lib/contentstack/preview";
 import type { SeoMetadata } from "@/lib/content/seo";
 
 export const BLOG_POST_CONTENT_TYPE = "blog_post";
@@ -57,4 +61,15 @@ export async function getBlogPostSlugs(): Promise<string[]> {
   const posts = await findEntries<Pick<BlogPost, "slug">>(BLOG_POST_CONTENT_TYPE);
 
   return posts.map((post) => post.slug).filter(Boolean);
+}
+
+/** Uncached and per-request: preview must never read from the shared cache. */
+export async function getBlogPostBySlugForPreview(
+  slug: string,
+  query: LivePreviewQuery,
+): Promise<BlogPost | null> {
+  return findEntryBySlug<BlogPost>(BLOG_POST_CONTENT_TYPE, slug, {
+    includeEmbeddedItems: true,
+    client: createPreviewClient(query),
+  });
 }

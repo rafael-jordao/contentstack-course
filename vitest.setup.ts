@@ -7,6 +7,17 @@ import { afterEach, vi } from "vitest";
  * `cacheLife` and `cacheTag` only work inside a Next request scope, so the
  * adapters that call them are unusable in tests without this.
  */
+/** Draft mode is off by default; tests that need it on override this per file. */
+vi.mock("next/headers", () => ({
+  draftMode: async () => ({
+    isEnabled: false,
+    enable: vi.fn(),
+    disable: vi.fn(),
+  }),
+  headers: async () => new Headers(),
+  cookies: async () => ({ get: () => undefined, has: () => false }),
+}));
+
 vi.mock("next/cache", () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),

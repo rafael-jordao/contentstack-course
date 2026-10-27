@@ -5,6 +5,10 @@ import {
   type ContentstackSystemFields,
   type JsonRteDocument,
 } from "@/lib/contentstack";
+import {
+  createPreviewClient,
+  type LivePreviewQuery,
+} from "@/lib/contentstack/preview";
 import type { BlogPost } from "@/lib/content/blog-post";
 import type { SeoMetadata } from "@/lib/content/seo";
 
@@ -117,4 +121,20 @@ export async function getPageUrls(): Promise<string[]> {
   const pages = await findEntries<Pick<Page, "url">>(PAGE_CONTENT_TYPE);
 
   return pages.map((page) => page.url).filter(Boolean);
+}
+
+/** Uncached and per-request: preview must never read from the shared cache. */
+export async function getPageByUrlForPreview(
+  url: string,
+  query: LivePreviewQuery,
+): Promise<Page | null> {
+  const pages = await findEntries<Page>(PAGE_CONTENT_TYPE, {
+    includeEmbeddedItems: true,
+    includeReference: SECTION_REFERENCES,
+    limit: 1,
+    where: { url },
+    client: createPreviewClient(query),
+  });
+
+  return pages[0] ?? null;
 }
