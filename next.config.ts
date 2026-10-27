@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./lib/contentstack/image-loader.ts",
   },
+  async rewrites() {
+    // App Router ignores folders starting with a dot, so the well-known paths
+    // are served from a normal route.
+    return [
+      { source: "/.well-known/ai-catalog.json", destination: "/api/ai-catalog" },
+      { source: "/.well-known/ard.json", destination: "/api/ai-catalog" },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {
