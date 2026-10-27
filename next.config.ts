@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "**.contentstack.com" },
+      { protocol: "https", hostname: "**.contentstack.io" },
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {

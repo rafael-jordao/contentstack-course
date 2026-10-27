@@ -1,3 +1,5 @@
+import type { EntryModel } from "@contentstack/utils";
+
 /** Fields Contentstack adds to every entry, regardless of content type. */
 export type ContentstackSystemFields = {
   uid: string;
@@ -6,6 +8,8 @@ export type ContentstackSystemFields = {
   updated_at: string;
   _version: number;
   tags: string[];
+  /** Present when the query opted into `includeEmbeddedItems`. */
+  _embedded_items?: Record<string, EntryModel[]>;
 };
 
 /** Shape of a file field once the Delivery API resolves it. */
