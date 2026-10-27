@@ -90,6 +90,30 @@ describe("findEntries", () => {
 
     expect(chain.skip).toHaveBeenCalledWith(0);
   });
+
+  it("passes a where filter to query()", async () => {
+    await findEntries("page", { where: { url: "/about" } });
+
+    expect(chain.query).toHaveBeenCalledWith({ url: "/about" });
+  });
+
+  it("does not call query() when no filter is given", async () => {
+    await findEntries("page");
+
+    expect(chain.query).not.toHaveBeenCalled();
+  });
+
+  it("combines a filter with ordering and pagination", async () => {
+    await findEntries("page", {
+      where: { url: "/about" },
+      orderByDescending: "updated_at",
+      limit: 1,
+    });
+
+    expect(chain.query).toHaveBeenCalledWith({ url: "/about" });
+    expect(chain.orderByDescending).toHaveBeenCalledWith("updated_at");
+    expect(chain.limit).toHaveBeenCalledWith(1);
+  });
 });
 
 describe("findEntryBySlug", () => {
