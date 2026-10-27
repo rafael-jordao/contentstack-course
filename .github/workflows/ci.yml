@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Unit tests
+        run: pnpm test
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    needs: test
+
+    env:
+      HAS_CREDENTIALS: ${{ secrets.CONTENTSTACK_DELIVERY_TOKEN != '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The build prerenders /blog/[slug], which reads from the Delivery API.
+      # Cache Components rejects an empty generateStaticParams, so this cannot
+      # run on placeholder credentials.
+      - name: Build
+        if: env.HAS_CREDENTIALS == 'true'
+        run: pnpm build
+        env:
+          CONTENTSTACK_API_KEY: ${{ secrets.CONTENTSTACK_API_KEY }}
+          CONTENTSTACK_DELIVERY_TOKEN: ${{ secrets.CONTENTSTACK_DELIVERY_TOKEN }}
+          CONTENTSTACK_ENVIRONMENT: ${{ vars.CONTENTSTACK_ENVIRONMENT || 'development' }}
+          CONTENTSTACK_REGION: ${{ vars.CONTENTSTACK_REGION || 'EU' }}
+
+      - name: Skipped
+        if: env.HAS_CREDENTIALS != 'true'
+        run: echo "Skipping build - Contentstack credentials are not configured in this repository."
