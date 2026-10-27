@@ -1,35 +1,25 @@
 import Image from "next/image";
 import { RichText } from "@/components/rich-text";
 import type { BlogPost } from "@/lib/content/blog-post";
+import { formatLongDate } from "@/lib/format-date";
 
 type BlogPostArticleProps = {
   post: BlogPost;
 };
 
-function formatDate(value: string | null) {
-  if (!value) return null;
-
-  return new Date(value).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
-
 export function BlogPostArticle({ post }: BlogPostArticleProps) {
-  const publishedDate = formatDate(post.published_date);
+  const publishedDate = formatLongDate(post.published_date);
 
   return (
     <article className="mx-auto w-full max-w-3xl px-16 py-32">
       <header className="flex flex-col gap-6">
-        <h1 className="mb-0 text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+        <h1 className="mb-0 text-3xl font-semibold leading-10 tracking-tight">
           {post.blog_post_title}
         </h1>
         {publishedDate && (
           <time
             dateTime={post.published_date ?? undefined}
-            className="font-mono text-sm text-zinc-500 dark:text-zinc-400"
+            className="font-mono text-sm text-muted-foreground"
           >
             {publishedDate}
           </time>
