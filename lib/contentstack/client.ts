@@ -11,7 +11,7 @@ const REGIONS: Record<string, Region> = {
   GCP_EU: Region.GCP_EU,
 };
 
-function requireEnv(name: string): string {
+export function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(`Missing environment variable ${name}. Add it to .env.local.`);
@@ -23,8 +23,12 @@ function requireEnv(name: string): string {
  * Required rather than defaulted: the SDK falls back to the US data center, so
  * an unset region silently points a non-US stack at the wrong host.
  */
-function resolveRegion(): Region {
-  const code = requireEnv("CONTENTSTACK_REGION").trim().toUpperCase();
+export function resolveRegionCode(): string {
+  return requireEnv("CONTENTSTACK_REGION").trim().toUpperCase();
+}
+
+export function resolveRegion(): Region {
+  const code = resolveRegionCode();
 
   const region = REGIONS[code];
   if (!region) {
