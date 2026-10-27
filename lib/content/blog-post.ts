@@ -1,7 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import {
   findEntries,
-  findEntryBySlug,
   type ContentstackAsset,
   type ContentstackSystemFields,
   type FindEntriesOptions,
@@ -16,14 +15,24 @@ import type { SeoMetadata } from "@/lib/content/seo";
 export const BLOG_POST_CONTENT_TYPE = "blog_post";
 
 export type BlogPost = ContentstackSystemFields & {
-  blog_post_title: string;
-  slug: string;
+  title: string;
+  url: string;
   published_date: string | null;
   cover_image: ContentstackAsset | null;
   body: JsonRteDocument | null;
   blog_tags?: string[];
   seo?: SeoMetadata | null;
 };
+
+/** Builds the stored url from a route segment, so both sides agree on one shape. */
+export function toBlogPostUrl(slug: string): string {
+  return `/blog/${slug}`;
+}
+
+/** Last segment of the stored url, used for route params and cache tags. */
+export function toBlogPostSlug(url: string): string {
+  return url.replace(/^\/blog\//, "");
+}
 
 /**
  * Reads go through `"use cache"` so they can be prerendered: the Delivery SDK
@@ -42,34 +51,42 @@ export async function getBlogPosts(options: FindEntriesOptions = {}) {
   });
 }
 
-export async function getBlogPostBySlug(slug: string) {
+export async function getBlogPostByUrl(url: string) {
   "use cache";
   cacheLife("content");
-  cacheTag(BLOG_POST_CONTENT_TYPE, `${BLOG_POST_CONTENT_TYPE}:${slug}`);
+  cacheTag(BLOG_POST_CONTENT_TYPE, `${BLOG_POST_CONTENT_TYPE}:${url}`);
 
-  return findEntryBySlug<BlogPost>(BLOG_POST_CONTENT_TYPE, slug, {
+  const posts = await findEntries<BlogPost>(BLOG_POST_CONTENT_TYPE, {
     includeEmbeddedItems: true,
+    limit: 1,
+    where: { url },
   });
+
+  return posts[0] ?? null;
 }
 
-/** Slugs for every published post, used to prerender the detail routes. */
-export async function getBlogPostSlugs(): Promise<string[]> {
+/** Urls for every published post, used to prerender the detail routes. */
+export async function getBlogPostUrls(): Promise<string[]> {
   "use cache";
   cacheLife("content");
   cacheTag(BLOG_POST_CONTENT_TYPE);
 
-  const posts = await findEntries<Pick<BlogPost, "slug">>(BLOG_POST_CONTENT_TYPE);
+  const posts = await findEntries<Pick<BlogPost, "url">>(BLOG_POST_CONTENT_TYPE);
 
-  return posts.map((post) => post.slug).filter(Boolean);
+  return posts.map((post) => post.url).filter(Boolean);
 }
 
 /** Uncached and per-request: preview must never read from the shared cache. */
-export async function getBlogPostBySlugForPreview(
-  slug: string,
+export async function getBlogPostByUrlForPreview(
+  url: string,
   query: LivePreviewQuery,
 ): Promise<BlogPost | null> {
-  return findEntryBySlug<BlogPost>(BLOG_POST_CONTENT_TYPE, slug, {
+  const posts = await findEntries<BlogPost>(BLOG_POST_CONTENT_TYPE, {
     includeEmbeddedItems: true,
+    limit: 1,
+    where: { url },
     client: createPreviewClient(query),
   });
+
+  return posts[0] ?? null;
 }

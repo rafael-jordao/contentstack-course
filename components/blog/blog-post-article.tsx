@@ -14,7 +14,7 @@ export function BlogPostArticle({ post }: BlogPostArticleProps) {
     <article className="mx-auto w-full max-w-3xl px-16 py-32">
       <header className="flex flex-col gap-6">
         <h1 className="mb-0 text-3xl font-semibold leading-10 tracking-tight">
-          {post.blog_post_title}
+          {post.title}
         </h1>
         {publishedDate && (
           <time
@@ -29,7 +29,7 @@ export function BlogPostArticle({ post }: BlogPostArticleProps) {
       {post.cover_image && (
         <ContentstackImage
           asset={post.cover_image}
-          alt={post.cover_image.title ?? post.blog_post_title}
+          alt={post.cover_image.title ?? post.title}
           width={1200}
           height={630}
           className="mt-12 h-auto w-full rounded"

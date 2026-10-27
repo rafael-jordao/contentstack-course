@@ -17,7 +17,7 @@ type BlogPostCardProps = {
 
 export function BlogPostCard({ post }: BlogPostCardProps) {
   const publishedDate = formatMonthYear(post.published_date);
-  const href = `/blog/${post.slug}`;
+  const href = post.url;
 
   return (
     <Card className="relative pt-0">
@@ -25,7 +25,7 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
         {post.cover_image?.url ? (
           <ContentstackImage
             asset={post.cover_image}
-            alt={post.cover_image.title ?? post.blog_post_title}
+            alt={post.cover_image.title ?? post.title}
             width={800}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -44,7 +44,7 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
       <CardHeader>
         <CardTitle className="text-base leading-6">
           <Link href={href} className="after:absolute after:inset-0">
-            {post.blog_post_title}
+            {post.title}
           </Link>
         </CardTitle>
       </CardHeader>
