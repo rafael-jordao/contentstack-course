@@ -12,7 +12,7 @@ export function RichTextSection({ content, pageUid }: RichTextSectionProps) {
       <RichTextRenderer
         json={content}
         uid={pageUid}
-        className="prose dark:prose-invert [&_p]:mb-6"
+        className="rich-text"
       />
     </section>
   );
