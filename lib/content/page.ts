@@ -95,7 +95,7 @@ export function toPageUrl(slug: string[] | undefined): string {
 
 export async function getPageByUrl(url: string) {
   "use cache";
-  cacheLife("hours");
+  cacheLife("content");
   cacheTag(PAGE_CONTENT_TYPE, `${PAGE_CONTENT_TYPE}:${url}`);
 
   const pages = await findEntries<Page>(PAGE_CONTENT_TYPE, {
@@ -111,7 +111,7 @@ export async function getPageByUrl(url: string) {
 /** Urls for every published page, used to prerender the catch-all route. */
 export async function getPageUrls(): Promise<string[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("content");
   cacheTag(PAGE_CONTENT_TYPE);
 
   const pages = await findEntries<Pick<Page, "url">>(PAGE_CONTENT_TYPE);
