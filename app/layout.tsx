@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteFooterSlot } from "@/components/layout/site-footer";
 import { SiteHeaderSlot } from "@/components/layout/site-header";
 import { SiteScriptsSlot } from "@/components/layout/site-scripts";
+import { LivePreviewSlot } from "@/components/live-preview-slot";
 import { fontVariables } from "@/lib/fonts";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -28,6 +29,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteFooterSlot />
 
         <SiteScriptsSlot />
+
+        <LivePreviewSlot />
       </body>
     </html>
   );

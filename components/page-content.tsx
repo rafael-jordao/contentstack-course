@@ -1,7 +1,13 @@
 import { notFound } from "next/navigation";
 import { SectionRenderer } from "@/components/sections/section-renderer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getPageByUrl, toPageUrl } from "@/lib/content/page";
+import { draftMode } from "next/headers";
+import {
+  getPageByUrl,
+  getPageByUrlForPreview,
+  toPageUrl,
+} from "@/lib/content/page";
+import { readLivePreviewQuery } from "@/lib/contentstack/preview";
 import { attempt } from "@/lib/result";
 
 type PageContentProps = {
@@ -11,7 +17,13 @@ type PageContentProps = {
 export async function PageContent({ params }: PageContentProps) {
   const { slug } = await params;
   const url = toPageUrl(slug);
-  const result = await attempt(getPageByUrl(url));
+  const { isEnabled } = await draftMode();
+
+  const result = await attempt(
+    isEnabled
+      ? readLivePreviewQuery().then((query) => getPageByUrlForPreview(url, query))
+      : getPageByUrl(url),
+  );
 
   if (!result.ok) {
     console.error(`Failed to load page "${url}"`, result.error);
