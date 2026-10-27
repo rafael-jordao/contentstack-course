@@ -4,7 +4,11 @@ import { notFound } from "next/navigation";
 import { BlogPostArticle } from "@/components/blog/blog-post-article";
 import { BlogPostArticleSkeleton } from "@/components/blog/blog-post-article-skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getBlogPostBySlug, getBlogPostSlugs } from "@/lib/content/blog-post";
+import {
+  BLOG_POST_CONTENT_TYPE,
+  getBlogPostBySlug,
+  getBlogPostSlugs,
+} from "@/lib/content/blog-post";
 import { attempt } from "@/lib/result";
 
 type Params = Promise<{ slug: string }>;
@@ -13,13 +17,24 @@ type BlogPostPageProps = {
   params: Params;
 };
 
+/**
+ * Cache Components rejects an empty result here, so a failed or empty fetch has
+ * to stop the build rather than silently ship a site with no post routes.
+ */
 export async function generateStaticParams() {
   const result = await attempt(getBlogPostSlugs());
 
   if (!result.ok) {
-    console.error("Failed to list blog post slugs", result.error);
+    throw new Error(
+      "Could not list blog post slugs from Contentstack. Check the delivery credentials and region.",
+      { cause: result.error },
+    );
+  }
 
-    return [];
+  if (result.data.length === 0) {
+    throw new Error(
+      `No published entries found for "${BLOG_POST_CONTENT_TYPE}" in this environment.`,
+    );
   }
 
   return result.data.map((slug) => ({ slug }));
