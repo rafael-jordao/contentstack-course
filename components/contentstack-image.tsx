@@ -1,9 +1,5 @@
 import Image, { type ImageProps } from "next/image";
-import {
-  assetDimensions,
-  contentstackImageUrl,
-  type ContentstackAsset,
-} from "@/lib/contentstack";
+import { assetDimensions, type ContentstackAsset } from "@/lib/contentstack";
 
 type ContentstackImageProps = Omit<
   ImageProps,
@@ -14,19 +10,18 @@ type ContentstackImageProps = Omit<
   alt?: string;
   width?: number;
   height?: number;
-  quality?: number;
 };
 
 /**
- * Resizing is delegated to Contentstack's Image Delivery API instead of the
- * Next.js optimizer, so the CDN serves the variant directly.
+ * The asset url is handed to Next untouched: the custom loader registered in
+ * next.config.ts turns each srcset entry into an Image Delivery API request, so
+ * Contentstack resizes and the Next optimizer stays out of the path.
  */
 export function ContentstackImage({
   asset,
   alt,
   width,
   height,
-  quality = 80,
   fill,
   sizes,
   ...props
@@ -36,17 +31,10 @@ export function ContentstackImage({
   const intrinsic = assetDimensions(asset);
   const resolvedWidth = width ?? intrinsic.width;
   const resolvedHeight = height ?? intrinsic.height;
-
-  const src = contentstackImageUrl(asset.url, {
-    width: resolvedWidth,
-    quality,
-    auto: "webp",
-  });
-
   const resolvedAlt = alt ?? asset.title ?? "";
 
   if (fill) {
-    return <Image {...props} src={src} alt={resolvedAlt} fill sizes={sizes} />;
+    return <Image {...props} src={asset.url} alt={resolvedAlt} fill sizes={sizes} />;
   }
 
   if (!resolvedWidth || !resolvedHeight) {
@@ -58,7 +46,7 @@ export function ContentstackImage({
   return (
     <Image
       {...props}
-      src={src}
+      src={asset.url}
       alt={resolvedAlt}
       width={resolvedWidth}
       height={resolvedHeight}
