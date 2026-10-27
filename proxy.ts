@@ -15,6 +15,10 @@ export function proxy(request: NextRequest) {
 
   if (!hash) return NextResponse.next();
 
+  // The panel probes the url with HEAD before loading the iframe. Redirecting
+  // that probe makes it never see a 200, so it reports the page unreachable.
+  if (request.method !== "GET") return NextResponse.next();
+
   // Draft mode has to be enabled by a route handler: the cookie is signed.
   if (!request.cookies.has(DRAFT_COOKIE)) {
     const draftUrl = new URL("/api/draft", request.nextUrl);
