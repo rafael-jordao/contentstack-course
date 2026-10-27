@@ -1,4 +1,4 @@
-import type { ContentType, Query } from "@contentstack/delivery-sdk";
+import type { ContentType, Query, Stack } from "@contentstack/delivery-sdk";
 import { deliveryClient } from "./client";
 
 /** The SDK does not export `Entries` from its root, so derive it. */
@@ -16,6 +16,8 @@ export type FindEntriesOptions = {
   includeEmbeddedItems?: boolean;
   /** Field UID to sort by, newest or highest first. */
   orderByDescending?: string;
+  /** Defaults to the shared delivery client; preview passes a per-request one. */
+  client?: Stack;
 };
 
 export async function findEntries<T>(
@@ -32,7 +34,9 @@ export async function findEntries<T>(
     limit,
   } = options;
 
-  let entries = deliveryClient.contentType(contentTypeUid).entry();
+  const stack = options.client ?? deliveryClient;
+
+  let entries = stack.contentType(contentTypeUid).entry();
 
   if (locale) entries = entries.locale(locale);
   if (includeReference?.length) entries = entries.includeReference(includeReference);
@@ -53,7 +57,7 @@ export async function findEntries<T>(
 
 export type FindEntryBySlugOptions = Pick<
   FindEntriesOptions,
-  "locale" | "includeReference" | "includeEmbeddedItems"
+  "locale" | "includeReference" | "includeEmbeddedItems" | "client"
 >;
 
 /** Returns the first entry whose `slug` field matches, or null when none does. */

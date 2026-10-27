@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { BlogPostArticle } from "@/components/blog/blog-post-article";
 import { BlogPostArticleSkeleton } from "@/components/blog/blog-post-article-skeleton";
@@ -8,7 +9,9 @@ import {
   BLOG_POST_CONTENT_TYPE,
   getBlogPostBySlug,
   getBlogPostSlugs,
+  getBlogPostBySlugForPreview,
 } from "@/lib/content/blog-post";
+import { readLivePreviewQuery } from "@/lib/contentstack/preview";
 import { toMetadata } from "@/lib/content/seo";
 import { attempt } from "@/lib/result";
 
@@ -47,7 +50,15 @@ export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await attempt(getBlogPostBySlug(slug));
+  const { isEnabled } = await draftMode();
+
+  const result = await attempt(
+    isEnabled
+      ? readLivePreviewQuery().then((query) =>
+          getBlogPostBySlugForPreview(slug, query),
+        )
+      : getBlogPostBySlug(slug),
+  );
 
   if (!result.ok) {
     console.error(`Failed to load metadata for "${slug}"`, result.error);
@@ -74,7 +85,15 @@ export async function generateMetadata({
 
 async function BlogPostContent({ params }: { params: Params }) {
   const { slug } = await params;
-  const result = await attempt(getBlogPostBySlug(slug));
+  const { isEnabled } = await draftMode();
+
+  const result = await attempt(
+    isEnabled
+      ? readLivePreviewQuery().then((query) =>
+          getBlogPostBySlugForPreview(slug, query),
+        )
+      : getBlogPostBySlug(slug),
+  );
 
   if (!result.ok) {
     console.error(`Failed to load blog post "${slug}"`, result.error);
