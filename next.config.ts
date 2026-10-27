@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    loader: "custom",
+    loaderFile: "./lib/contentstack/image-loader.ts",
+  },
   turbopack: {
     rules: {
       "*.css": {
