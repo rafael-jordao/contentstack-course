@@ -7,6 +7,7 @@ import {
   type FindEntriesOptions,
   type JsonRteDocument,
 } from "@/lib/contentstack";
+import type { SeoMetadata } from "@/lib/content/seo";
 
 export const BLOG_POST_CONTENT_TYPE = "blog_post";
 
@@ -17,6 +18,7 @@ export type BlogPost = ContentstackSystemFields & {
   cover_image: ContentstackAsset | null;
   body: JsonRteDocument | null;
   blog_tags?: string[];
+  seo?: SeoMetadata | null;
 };
 
 /**
