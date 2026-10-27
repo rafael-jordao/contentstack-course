@@ -1,5 +1,15 @@
 import { BLOG_POST_CONTENT_TYPE } from "@/lib/content/blog-post";
+import { FOOTER_CONTENT_TYPE } from "@/lib/content/footer";
+import { HEADER_CONTENT_TYPE } from "@/lib/content/header";
 import { PAGE_CONTENT_TYPE } from "@/lib/content/page";
+import { SITE_CONFIG_CONTENT_TYPE } from "@/lib/content/site-config";
+
+/** Chrome appears on every page, so a change invalidates the whole site. */
+const CHROME_CONTENT_TYPES = new Set<string>([
+  SITE_CONFIG_CONTENT_TYPE,
+  HEADER_CONTENT_TYPE,
+  FOOTER_CONTENT_TYPE,
+]);
 
 const INVALIDATING_EVENTS = new Set(["publish", "unpublish", "delete"]);
 
@@ -40,6 +50,13 @@ export function resolveRevalidation(
 
   const contentType = payload.data?.content_type?.uid;
   const entry = payload.data?.entry;
+
+  if (contentType && CHROME_CONTENT_TYPES.has(contentType)) {
+    return {
+      paths: ["/"],
+      tags: [SITE_CONFIG_CONTENT_TYPE, HEADER_CONTENT_TYPE, FOOTER_CONTENT_TYPE],
+    };
+  }
 
   if (contentType === BLOG_POST_CONTENT_TYPE) {
     // The listing and the homepage both surface posts.

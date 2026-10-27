@@ -41,7 +41,7 @@ export function BlogPostArticle({ post }: BlogPostArticleProps) {
         json={post.body}
         uid={post.uid}
         embeddedItems={post._embedded_items}
-        className="prose mt-12 dark:prose-invert [&_p]:mb-6"
+        className="rich-text mt-12"
       />
     </article>
   );

@@ -7,6 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-fraunces);
   --font-mono: var(--font-jetbrains-mono);
@@ -49,15 +50,17 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Brand palette. Kept in hex so it stays verifiable against the brand spec. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --background: #f9f9f9;
+  --foreground: #393c45;
+  --heading: #0b111f;
+  --card: #ffffff;
+  --card-foreground: #393c45;
+  --popover: #ffffff;
+  --popover-foreground: #393c45;
+  --primary: #3416f5;
+  --primary-foreground: #f9f9f9;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -85,14 +88,15 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --background: #0b111f;
+  --foreground: #f9f9f9;
+  --heading: #ffffff;
+  --card: #131a2b;
+  --card-foreground: #f9f9f9;
+  --popover: #131a2b;
+  --popover-foreground: #f9f9f9;
+  --primary: #d7d5fd;
+  --primary-foreground: #0b111f;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -129,6 +133,126 @@
     @apply font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
+    @apply font-heading text-heading text-balance;
+  }
+  h1 {
+    @apply text-4xl leading-tight font-semibold tracking-tight;
+  }
+  h2 {
+    @apply text-3xl leading-tight font-semibold tracking-tight;
+  }
+  h3 {
+    @apply text-2xl leading-snug font-semibold;
+  }
+  h4 {
+    @apply text-xl leading-snug font-semibold;
+  }
+  h5 {
+    @apply text-lg leading-snug font-semibold;
+  }
+  h6 {
+    @apply text-base leading-snug font-semibold uppercase tracking-wide;
+  }
+}
+
+/*
+ * Governs HTML the JSON RTE injects, which no React component can style.
+ * Tailwind's preflight strips list markers and heading sizes, so anything the
+ * editor can produce has to be restored here.
+ */
+@layer components {
+  .rich-text {
+    @apply text-base leading-relaxed text-foreground;
+  }
+
+  .rich-text > * + * {
+    @apply mt-6;
+  }
+
+  .rich-text h2 {
+    @apply mt-12 mb-0;
+  }
+
+  .rich-text h3,
+  .rich-text h4,
+  .rich-text h5,
+  .rich-text h6 {
+    @apply mt-10 mb-0;
+  }
+
+  .rich-text p {
+    @apply mb-0;
+  }
+
+  .rich-text a {
+    @apply text-primary underline decoration-primary/40 underline-offset-4;
+    @apply hover:decoration-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none;
+  }
+
+  .rich-text strong {
+    @apply font-semibold text-heading;
+  }
+
+  .rich-text ul,
+  .rich-text ol {
+    @apply flex flex-col gap-2 ps-6;
+  }
+
+  .rich-text ul {
+    @apply list-disc;
+  }
+
+  .rich-text ol {
+    @apply list-decimal;
+  }
+
+  .rich-text li::marker {
+    @apply text-muted-foreground;
+  }
+
+  .rich-text li > ul,
+  .rich-text li > ol {
+    @apply mt-2;
+  }
+
+  .rich-text blockquote {
+    @apply border-s-2 border-primary ps-6 text-lg text-muted-foreground italic;
+  }
+
+  .rich-text code {
+    @apply rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[0.875em];
+  }
+
+  .rich-text pre {
+    @apply overflow-x-auto rounded-lg bg-muted p-4 font-mono text-sm;
+  }
+
+  .rich-text pre code {
+    @apply bg-transparent p-0;
+  }
+
+  /* Wide tables scroll inside the block instead of widening the page. */
+  .rich-text table {
+    @apply block w-full overflow-x-auto border-collapse text-left text-sm;
+  }
+
+  .rich-text th {
+    @apply border-b border-border pb-3 pe-6 font-heading font-semibold text-heading;
+  }
+
+  .rich-text td {
+    @apply border-b border-border py-3 pe-6 align-top;
+  }
+
+  .rich-text hr {
+    @apply my-12 border-t border-border;
+  }
+
+  .rich-text img {
+    @apply h-auto max-w-full rounded-lg;
+  }
+
+  .rich-text figcaption {
+    @apply mt-3 text-sm text-muted-foreground;
   }
 }

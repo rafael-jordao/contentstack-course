@@ -123,6 +123,34 @@ describe("resolveRevalidation", () => {
     expect(target).toBeNull();
   });
 
+  it("purges the whole shell when the site config changes", () => {
+    const target = resolveRevalidation(
+      publishPayload("site_config", { uid: "blt1" }),
+      "development",
+    );
+
+    expect(target?.paths).toEqual(["/"]);
+    expect(target?.tags).toEqual(["site_config", "header", "footer"]);
+  });
+
+  it("treats a header publish as a shell change", () => {
+    const target = resolveRevalidation(
+      publishPayload("header", { uid: "blt1" }),
+      "development",
+    );
+
+    expect(target?.tags).toContain("header");
+  });
+
+  it("treats a footer publish as a shell change", () => {
+    const target = resolveRevalidation(
+      publishPayload("footer", { uid: "blt1" }),
+      "development",
+    );
+
+    expect(target?.tags).toContain("footer");
+  });
+
   it("ignores an unknown content type", () => {
     const target = resolveRevalidation(
       publishPayload("author", { uid: "blt1" }),
