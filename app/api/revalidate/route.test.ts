@@ -27,7 +27,7 @@ const PUBLISH_BODY = {
   data: {
     action: "publish",
     content_type: { uid: "blog_post" },
-    entry: { slug: "my-post" },
+    entry: { url: "/blog/my-post" },
     environment: { name: "development" },
   },
 };
@@ -48,7 +48,7 @@ describe("POST /api/revalidate", () => {
 
     expect(revalidatePath).toHaveBeenCalledWith("/blog/my-post");
     expect(revalidatePath).toHaveBeenCalledWith("/blog");
-    expect(revalidateTag).toHaveBeenCalledWith("blog_post:my-post", { expire: 0 });
+    expect(revalidateTag).toHaveBeenCalledWith("blog_post:/blog/my-post", { expire: 0 });
   });
 
   it("expires tags immediately rather than serving stale content", async () => {

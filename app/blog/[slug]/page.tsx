@@ -7,9 +7,11 @@ import { BlogPostArticleSkeleton } from "@/components/blog/blog-post-article-ske
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   BLOG_POST_CONTENT_TYPE,
-  getBlogPostBySlug,
-  getBlogPostSlugs,
-  getBlogPostBySlugForPreview,
+  toBlogPostSlug,
+  toBlogPostUrl,
+  getBlogPostByUrl,
+  getBlogPostUrls,
+  getBlogPostByUrlForPreview,
 } from "@/lib/content/blog-post";
 import { readLivePreviewQuery } from "@/lib/contentstack/preview";
 import { toMetadata } from "@/lib/content/seo";
@@ -29,7 +31,7 @@ type BlogPostPageProps = {
 const PLACEHOLDER_PARAMS = [{ slug: "no-posts-published" }];
 
 export async function generateStaticParams() {
-  const result = await attempt(getBlogPostSlugs());
+  const result = await attempt(getBlogPostUrls());
 
   if (!result.ok) {
     console.error("Could not list blog post slugs from Contentstack", result.error);
@@ -43,7 +45,7 @@ export async function generateStaticParams() {
     return PLACEHOLDER_PARAMS;
   }
 
-  return result.data.map((slug) => ({ slug }));
+  return result.data.map((url) => ({ slug: toBlogPostSlug(url) }));
 }
 
 export async function generateMetadata({
@@ -55,9 +57,9 @@ export async function generateMetadata({
   const result = await attempt(
     isEnabled
       ? readLivePreviewQuery().then((query) =>
-          getBlogPostBySlugForPreview(slug, query),
+          getBlogPostByUrlForPreview(toBlogPostUrl(slug), query),
         )
-      : getBlogPostBySlug(slug),
+      : getBlogPostByUrl(toBlogPostUrl(slug)),
   );
 
   if (!result.ok) {
@@ -74,7 +76,7 @@ export async function generateMetadata({
 
   return toMetadata({
     seo: post.seo,
-    fallbackTitle: post.blog_post_title,
+    fallbackTitle: post.title,
     fallbackImage: post.cover_image,
     openGraph: {
       type: "article",
@@ -90,9 +92,9 @@ async function BlogPostContent({ params }: { params: Params }) {
   const result = await attempt(
     isEnabled
       ? readLivePreviewQuery().then((query) =>
-          getBlogPostBySlugForPreview(slug, query),
+          getBlogPostByUrlForPreview(toBlogPostUrl(slug), query),
         )
-      : getBlogPostBySlug(slug),
+      : getBlogPostByUrl(toBlogPostUrl(slug)),
   );
 
   if (!result.ok) {

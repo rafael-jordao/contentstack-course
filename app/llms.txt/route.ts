@@ -25,7 +25,7 @@ export async function GET() {
     const description = post.seo?.meta_description?.trim();
 
     lines.push(
-      `- [${post.blog_post_title}](${absoluteUrl(`blog/${post.slug}`)})${
+      `- [${post.title}](${absoluteUrl(post.url)})${
         description ? `: ${description}` : ""
       }`,
     );

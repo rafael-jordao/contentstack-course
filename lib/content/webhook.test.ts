@@ -20,15 +20,15 @@ function publishPayload(
 describe("resolveRevalidation", () => {
   it("purges the post, the listing and the homepage on a blog publish", () => {
     const target = resolveRevalidation(
-      publishPayload("blog_post", { slug: "my-post" }),
+      publishPayload("blog_post", { url: "/blog/my-post" }),
       "development",
     );
 
     expect(target?.paths).toEqual(["/blog", "/", "/blog/my-post"]);
-    expect(target?.tags).toEqual(["blog_post", "blog_post:my-post"]);
+    expect(target?.tags).toEqual(["blog_post", "blog_post:/blog/my-post"]);
   });
 
-  it("still purges the listing when the payload has no slug", () => {
+  it("still purges the listing when the payload has no url", () => {
     const target = resolveRevalidation(publishPayload("blog_post", {}), "development");
 
     expect(target?.paths).toEqual(["/blog", "/"]);
@@ -79,7 +79,7 @@ describe("resolveRevalidation", () => {
         data: {
           action: "unpublish",
           content_type: { uid: "blog_post" },
-          entry: { slug: "gone" },
+          entry: { url: "/blog/gone" },
           environment: { name: "development" },
         },
       },
