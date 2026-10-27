@@ -9,6 +9,7 @@ import {
   getBlogPostBySlug,
   getBlogPostSlugs,
 } from "@/lib/content/blog-post";
+import { toMetadata } from "@/lib/content/seo";
 import { attempt } from "@/lib/result";
 
 type Params = Promise<{ slug: string }>;
@@ -18,23 +19,25 @@ type BlogPostPageProps = {
 };
 
 /**
- * Cache Components rejects an empty result here, so a failed or empty fetch has
- * to stop the build rather than silently ship a site with no post routes.
+ * Cache Components rejects an empty result, and `notFound()` is not available
+ * outside render. This stand-in keeps the route buildable with no posts; the
+ * render path answers it with a 404.
  */
+const PLACEHOLDER_PARAMS = [{ slug: "no-posts-published" }];
+
 export async function generateStaticParams() {
   const result = await attempt(getBlogPostSlugs());
 
   if (!result.ok) {
-    throw new Error(
-      "Could not list blog post slugs from Contentstack. Check the delivery credentials and region.",
-      { cause: result.error },
-    );
+    console.error("Could not list blog post slugs from Contentstack", result.error);
+
+    return PLACEHOLDER_PARAMS;
   }
 
   if (result.data.length === 0) {
-    throw new Error(
-      `No published entries found for "${BLOG_POST_CONTENT_TYPE}" in this environment.`,
-    );
+    console.warn(`No published entries found for "${BLOG_POST_CONTENT_TYPE}"`);
+
+    return PLACEHOLDER_PARAMS;
   }
 
   return result.data.map((slug) => ({ slug }));
@@ -58,15 +61,15 @@ export async function generateMetadata({
     return { title: "Post not found" };
   }
 
-  return {
-    title: post.blog_post_title,
+  return toMetadata({
+    seo: post.seo,
+    fallbackTitle: post.blog_post_title,
+    fallbackImage: post.cover_image,
     openGraph: {
-      title: post.blog_post_title,
       type: "article",
       publishedTime: post.published_date ?? undefined,
-      images: post.cover_image?.url ? [{ url: post.cover_image.url }] : undefined,
     },
-  };
+  });
 }
 
 async function BlogPostContent({ params }: { params: Params }) {

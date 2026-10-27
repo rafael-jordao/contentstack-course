@@ -7,6 +7,7 @@ import {
   type FindEntriesOptions,
   type JsonRteDocument,
 } from "@/lib/contentstack";
+import type { SeoMetadata } from "@/lib/content/seo";
 
 export const BLOG_POST_CONTENT_TYPE = "blog_post";
 
@@ -17,6 +18,7 @@ export type BlogPost = ContentstackSystemFields & {
   cover_image: ContentstackAsset | null;
   body: JsonRteDocument | null;
   blog_tags?: string[];
+  seo?: SeoMetadata | null;
 };
 
 /**
@@ -27,7 +29,7 @@ export type BlogPost = ContentstackSystemFields & {
  */
 export async function getBlogPosts(options: FindEntriesOptions = {}) {
   "use cache";
-  cacheLife("hours");
+  cacheLife("content");
   cacheTag(BLOG_POST_CONTENT_TYPE);
 
   return findEntries<BlogPost>(BLOG_POST_CONTENT_TYPE, {
@@ -38,7 +40,7 @@ export async function getBlogPosts(options: FindEntriesOptions = {}) {
 
 export async function getBlogPostBySlug(slug: string) {
   "use cache";
-  cacheLife("hours");
+  cacheLife("content");
   cacheTag(BLOG_POST_CONTENT_TYPE, `${BLOG_POST_CONTENT_TYPE}:${slug}`);
 
   return findEntryBySlug<BlogPost>(BLOG_POST_CONTENT_TYPE, slug, {
@@ -49,7 +51,7 @@ export async function getBlogPostBySlug(slug: string) {
 /** Slugs for every published post, used to prerender the detail routes. */
 export async function getBlogPostSlugs(): Promise<string[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("content");
   cacheTag(BLOG_POST_CONTENT_TYPE);
 
   const posts = await findEntries<Pick<BlogPost, "slug">>(BLOG_POST_CONTENT_TYPE);
