@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -60,15 +60,12 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
       </CardContent>
 
       <CardFooter>
-        <Button
-          variant="outline"
-          size="sm"
-          tabIndex={-1}
+        <span
           aria-hidden="true"
-          render={<Link href={href} />}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
         >
           View Details
-        </Button>
+        </span>
       </CardFooter>
     </Card>
   );
