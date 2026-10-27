@@ -30,8 +30,10 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # `next typegen` writes the generated route types (LayoutProps, PageProps)
+      # that tsc needs; without a prior build they do not exist on a fresh clone.
       - name: Typecheck
-        run: pnpm exec tsc --noEmit
+        run: pnpm typecheck
 
       - name: Unit tests
         run: pnpm test
