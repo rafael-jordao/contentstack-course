@@ -8,6 +8,8 @@ export type FindEntriesOptions = {
   locale?: string;
   limit?: number;
   skip?: number;
+  /** Field equality filter, e.g. `{ slug: "hello" }`. */
+  where?: Record<string, unknown>;
   /** Reference field UIDs to resolve into full objects. */
   includeReference?: string[];
   /** Resolve entries and assets embedded in JSON RTE fields. */
@@ -16,8 +18,19 @@ export type FindEntriesOptions = {
   orderByDescending?: string;
 };
 
-function buildQuery(contentTypeUid: string, options: FindEntriesOptions) {
-  const { locale, includeReference, includeEmbeddedItems } = options;
+export async function findEntries<T>(
+  contentTypeUid: string,
+  options: FindEntriesOptions = {},
+): Promise<T[]> {
+  const {
+    locale,
+    includeReference,
+    includeEmbeddedItems,
+    where,
+    orderByDescending,
+    skip,
+    limit,
+  } = options;
 
   let entries = deliveryClient.contentType(contentTypeUid).entry();
 
@@ -25,17 +38,9 @@ function buildQuery(contentTypeUid: string, options: FindEntriesOptions) {
   if (includeReference?.length) entries = entries.includeReference(includeReference);
   if (includeEmbeddedItems) entries = entries.includeEmbeddedItems();
 
-  return entries;
-}
-
-export async function findEntries<T>(
-  contentTypeUid: string,
-  options: FindEntriesOptions = {},
-): Promise<T[]> {
-  const { limit, skip, orderByDescending } = options;
-
-  // Pagination and ordering widen Entries to Query; both still expose find().
-  let query: EntriesQuery | Query = buildQuery(contentTypeUid, options);
+  // Filtering, ordering and pagination widen Entries to Query, which still
+  // exposes find(). `query()` only exists on Entries, so it has to come first.
+  let query: EntriesQuery | Query = where ? entries.query(where) : entries;
 
   if (orderByDescending) query = query.orderByDescending(orderByDescending);
   if (typeof skip === "number") query = query.skip(skip);
@@ -57,10 +62,11 @@ export async function findEntryBySlug<T>(
   slug: string,
   options: FindEntryBySlugOptions = {},
 ): Promise<T | null> {
-  const result = await buildQuery(contentTypeUid, options)
-    .query({ slug })
-    .limit(1)
-    .find<T>();
+  const entries = await findEntries<T>(contentTypeUid, {
+    ...options,
+    where: { slug },
+    limit: 1,
+  });
 
-  return result.entries?.[0] ?? null;
+  return entries[0] ?? null;
 }
