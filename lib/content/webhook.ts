@@ -63,9 +63,9 @@ export function resolveRevalidation(
     const paths = ["/blog", "/"];
     const tags = [BLOG_POST_CONTENT_TYPE];
 
-    if (entry?.slug) {
-      paths.push(`/blog/${entry.slug}`);
-      tags.push(`${BLOG_POST_CONTENT_TYPE}:${entry.slug}`);
+    if (entry?.url) {
+      paths.push(entry.url);
+      tags.push(`${BLOG_POST_CONTENT_TYPE}:${entry.url}`);
     }
 
     return { paths, tags };

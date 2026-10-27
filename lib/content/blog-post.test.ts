@@ -1,20 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findEntries = vi.fn();
-const findEntryBySlug = vi.fn();
 
 vi.mock("@/lib/contentstack", () => ({
   findEntries: (...args: unknown[]) => findEntries(...args),
-  findEntryBySlug: (...args: unknown[]) => findEntryBySlug(...args),
 }));
 
-const { BLOG_POST_CONTENT_TYPE, getBlogPostBySlug, getBlogPostSlugs, getBlogPosts } =
+const { BLOG_POST_CONTENT_TYPE, getBlogPostByUrl, getBlogPostUrls, getBlogPosts } =
   await import("./blog-post");
 
 beforeEach(() => {
   vi.clearAllMocks();
   findEntries.mockResolvedValue([]);
-  findEntryBySlug.mockResolvedValue(null);
 });
 
 describe("getBlogPosts", () => {
@@ -42,34 +39,55 @@ describe("getBlogPosts", () => {
   });
 });
 
-describe("getBlogPostBySlug", () => {
-  it("requests embedded items so rich text embeds resolve", async () => {
-    await getBlogPostBySlug("hello");
+describe("getBlogPostByUrl", () => {
+  it("filters by the url field and resolves embeds", async () => {
+    await getBlogPostByUrl("/blog/hello");
 
-    expect(findEntryBySlug).toHaveBeenCalledWith(BLOG_POST_CONTENT_TYPE, "hello", {
+    expect(findEntries).toHaveBeenCalledWith(BLOG_POST_CONTENT_TYPE, {
       includeEmbeddedItems: true,
+      limit: 1,
+      where: { url: "/blog/hello" },
     });
   });
 
-  it("returns null when the slug does not exist", async () => {
-    await expect(getBlogPostBySlug("missing")).resolves.toBeNull();
+  it("returns the first match", async () => {
+    findEntries.mockResolvedValue([{ uid: "blt1", url: "/blog/hello" }]);
+
+    await expect(getBlogPostByUrl("/blog/hello")).resolves.toEqual({
+      uid: "blt1",
+      url: "/blog/hello",
+    });
+  });
+
+  it("returns null when the url does not exist", async () => {
+    await expect(getBlogPostByUrl("/blog/missing")).resolves.toBeNull();
   });
 });
 
-describe("getBlogPostSlugs", () => {
-  it("returns only the slug of each post", async () => {
-    findEntries.mockResolvedValue([{ slug: "one" }, { slug: "two" }]);
+describe("getBlogPostUrls", () => {
+  it("returns the url of each post", async () => {
+    findEntries.mockResolvedValue([{ url: "/blog/one" }, { url: "/blog/two" }]);
 
-    await expect(getBlogPostSlugs()).resolves.toEqual(["one", "two"]);
+    await expect(getBlogPostUrls()).resolves.toEqual(["/blog/one", "/blog/two"]);
   });
 
-  it("drops entries with an empty slug", async () => {
-    findEntries.mockResolvedValue([{ slug: "one" }, { slug: "" }, {}]);
+  it("drops entries with an empty url", async () => {
+    findEntries.mockResolvedValue([{ url: "/blog/one" }, { url: "" }, {}]);
 
-    await expect(getBlogPostSlugs()).resolves.toEqual(["one"]);
+    await expect(getBlogPostUrls()).resolves.toEqual(["/blog/one"]);
   });
 
   it("returns an empty array when there are no posts", async () => {
-    await expect(getBlogPostSlugs()).resolves.toEqual([]);
+    await expect(getBlogPostUrls()).resolves.toEqual([]);
+  });
+});
+
+describe("url and slug conversion", () => {
+  it("round-trips a slug through the stored url", async () => {
+    const { toBlogPostSlug, toBlogPostUrl } = await import("./blog-post");
+
+    expect(toBlogPostUrl("my-post")).toBe("/blog/my-post");
+    expect(toBlogPostSlug("/blog/my-post")).toBe("my-post");
+    expect(toBlogPostSlug(toBlogPostUrl("my-post"))).toBe("my-post");
   });
 });
