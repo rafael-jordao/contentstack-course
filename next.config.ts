@@ -8,10 +8,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**.contentstack.com" },
-      { protocol: "https", hostname: "**.contentstack.io" },
-    ],
+    loader: "custom",
+    loaderFile: "./lib/contentstack/image-loader.ts",
   },
   turbopack: {
     rules: {
