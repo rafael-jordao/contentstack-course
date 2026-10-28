@@ -1,0 +1,326 @@
+{
+  "content_type": {
+    "title": "Page",
+    "uid": "page",
+    "description": "Generic page composed of reusable sections",
+    "options": {
+      "is_page": true,
+      "singleton": false,
+      "title": "title",
+      "sub_title": [],
+      "url_pattern": "/:title",
+      "url_prefix": "/"
+    },
+    "schema": [
+      {
+        "display_name": "Title",
+        "uid": "title",
+        "data_type": "text",
+        "field_metadata": {
+          "_default": true,
+          "version": 3
+        },
+        "mandatory": true,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "URL",
+        "uid": "url",
+        "data_type": "text",
+        "field_metadata": {
+          "_default": true,
+          "version": 3,
+          "description": "Full path, starting with a slash. Use / for the homepage."
+        },
+        "mandatory": true,
+        "unique": true,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "SEO",
+        "uid": "seo",
+        "data_type": "global_field",
+        "reference_to": "seo_metadata",
+        "field_metadata": {
+          "description": ""
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Header",
+        "uid": "header",
+        "data_type": "reference",
+        "reference_to": ["header"],
+        "field_metadata": {
+          "ref_multiple": false,
+          "instruction": "Leave empty to use the site default.",
+          "description": "",
+          "ref_multiple_content_types": true
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Footer",
+        "uid": "footer",
+        "data_type": "reference",
+        "reference_to": ["footer"],
+        "field_metadata": {
+          "ref_multiple": false,
+          "instruction": "Leave empty to use the site default.",
+          "description": "",
+          "ref_multiple_content_types": true
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Sections",
+        "uid": "sections",
+        "data_type": "blocks",
+        "multiple": true,
+        "mandatory": false,
+        "unique": false,
+        "non_localizable": false,
+        "field_metadata": {
+          "instruction": "Add and reorder the sections that make up this page.",
+          "description": ""
+        },
+        "blocks": [
+          {
+            "title": "Hero",
+            "uid": "hero",
+            "schema": [
+              {
+                "display_name": "Heading",
+                "uid": "heading",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": false,
+                  "version": 3
+                },
+                "mandatory": true,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "Subheading",
+                "uid": "subheading",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": true,
+                  "version": 3
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "Background Image",
+                "uid": "image",
+                "data_type": "file",
+                "field_metadata": {
+                  "description": "",
+                  "rich_text_type": "standard"
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "CTA Label",
+                "uid": "cta_label",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": false,
+                  "version": 3
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "CTA URL",
+                "uid": "cta_url",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": false,
+                  "version": 3
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              }
+            ]
+          },
+          {
+            "title": "Rich Text",
+            "uid": "rich_text",
+            "schema": [
+              {
+                "display_name": "Content",
+                "uid": "content",
+                "data_type": "json",
+                "field_metadata": {
+                  "allow_json_rte": true,
+                  "rich_text_type": "advanced",
+                  "description": "",
+                  "default_value": ""
+                },
+                "reference_to": ["sys_assets"],
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              }
+            ]
+          },
+          {
+            "title": "Feature Grid",
+            "uid": "feature_grid",
+            "schema": [
+              {
+                "display_name": "Heading",
+                "uid": "heading",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": false,
+                  "version": 3
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "Items",
+                "uid": "items",
+                "data_type": "group",
+                "multiple": true,
+                "mandatory": false,
+                "unique": false,
+                "field_metadata": {
+                  "instruction": "",
+                  "description": ""
+                },
+                "schema": [
+                  {
+                    "display_name": "Title",
+                    "uid": "item_title",
+                    "data_type": "text",
+                    "field_metadata": {
+                      "default_value": "",
+                      "multiline": false,
+                      "version": 3
+                    },
+                    "mandatory": true,
+                    "unique": false,
+                    "multiple": false,
+                    "non_localizable": false
+                  },
+                  {
+                    "display_name": "Description",
+                    "uid": "item_description",
+                    "data_type": "text",
+                    "field_metadata": {
+                      "default_value": "",
+                      "multiline": true,
+                      "version": 3
+                    },
+                    "mandatory": false,
+                    "unique": false,
+                    "multiple": false,
+                    "non_localizable": false
+                  },
+                  {
+                    "display_name": "Icon",
+                    "uid": "icon",
+                    "data_type": "file",
+                    "field_metadata": {
+                      "description": "",
+                      "rich_text_type": "standard"
+                    },
+                    "mandatory": false,
+                    "unique": false,
+                    "multiple": false,
+                    "non_localizable": false
+                  }
+                ],
+                "non_localizable": false
+              }
+            ]
+          },
+          {
+            "title": "Post List",
+            "uid": "post_list",
+            "schema": [
+              {
+                "display_name": "Heading",
+                "uid": "heading",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": false,
+                  "version": 3
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "Limit",
+                "uid": "limit",
+                "data_type": "number",
+                "field_metadata": {
+                  "description": "How many posts to show when none are hand-picked below.",
+                  "default_value": 3
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "Posts",
+                "uid": "posts",
+                "data_type": "reference",
+                "reference_to": ["blog_post"],
+                "field_metadata": {
+                  "ref_multiple": true,
+                  "instruction": "Leave empty to show the most recent posts automatically.",
+                  "description": "",
+                  "ref_multiple_content_types": true
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

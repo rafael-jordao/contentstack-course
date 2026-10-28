@@ -1,5 +1,5 @@
 {
-  "name": "contentstack-course",
+  "name": "nextjs-contentstack-template",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "prepare": "husky",
     "typecheck": "next typegen && tsc --noEmit",
-    "dev:https": "next dev --experimental-https"
+    "dev:https": "next dev --experimental-https",
+    "content-model:import": "node --env-file=.env.local scripts/import-content-model.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
