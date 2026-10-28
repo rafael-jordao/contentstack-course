@@ -1,0 +1,64 @@
+{
+  "global_field": {
+    "title": "SEO Metadata",
+    "uid": "seo_metadata",
+    "description": "Shared metadata fields, so page and blog_post cannot drift apart",
+    "schema": [
+      {
+        "display_name": "Meta Title",
+        "uid": "meta_title",
+        "data_type": "text",
+        "field_metadata": {
+          "description": "Overrides the entry title in the browser tab and search results.",
+          "default_value": "",
+          "multiline": false,
+          "version": 3
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Meta Description",
+        "uid": "meta_description",
+        "data_type": "text",
+        "field_metadata": {
+          "description": "Shown under the title in search results. Aim for 150 to 160 characters.",
+          "default_value": "",
+          "multiline": true,
+          "version": 3
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Social Share Image",
+        "uid": "og_image",
+        "data_type": "file",
+        "field_metadata": {
+          "description": "Used as the Open Graph image when the page is shared.",
+          "rich_text_type": "standard"
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Hide From Search Engines",
+        "uid": "no_index",
+        "data_type": "boolean",
+        "field_metadata": {
+          "description": "Adds a noindex directive so crawlers skip this page."
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      }
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import { getSiteConfig } from "@/lib/content/site-config";
+import { getSiteConfig, SITE_NAME_FALLBACK } from "@/lib/content/site-config";
 import { getSiteUrl } from "@/lib/site-url";
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
   const catalog = {
     specVersion: "1.0",
     host: {
-      displayName: config?.siteName ?? "Contentstack Course",
+      displayName: config?.siteName ?? SITE_NAME_FALLBACK,
       identifier: origin.hostname,
       documentationUrl: new URL("/llms.txt", origin).toString(),
     },

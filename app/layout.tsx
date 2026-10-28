@@ -3,6 +3,7 @@ import { SiteFooterSlot } from "@/components/layout/site-footer";
 import { SiteHeaderSlot } from "@/components/layout/site-header";
 import { SiteScriptsSlot } from "@/components/layout/site-scripts";
 import { LivePreviewSlot } from "@/components/live-preview-slot";
+import { SITE_NAME_FALLBACK } from "@/lib/content/site-config";
 import { fontVariables } from "@/lib/fonts";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -10,8 +11,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "Contentstack Course",
-    template: "%s · Contentstack Course",
+    default: SITE_NAME_FALLBACK,
+    template: `%s · ${SITE_NAME_FALLBACK}`,
   },
 };
 

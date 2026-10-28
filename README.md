@@ -1,6 +1,8 @@
-# Contentstack Course
+# Next.js + Contentstack template
 
-A Next.js site driven by Contentstack: generic pages composed from reusable sections, a blog, and a header, footer and third-party scripts that editors configure without a deploy.
+A starting point for Contentstack sites: generic pages composed from reusable sections, a blog, and a header, footer and third-party scripts that editors configure without a deploy. Live Preview, webhook revalidation, SEO and the discovery routes are wired up already.
+
+The content model ships as JSON, so a new project is a clone, an import and a token.
 
 ## Stack
 
@@ -16,25 +18,29 @@ A Next.js site driven by Contentstack: generic pages composed from reusable sect
 
 ```bash
 pnpm install
+cp .env.example .env.local        # then fill it in
+pnpm content-model:import         # creates the content types in an empty stack
 pnpm dev
 ```
 
-Create `.env.local` first, or the app throws on the first request: the delivery client validates its configuration at module load.
+`.env.example` documents every variable. Fill `.env.local` before the first request: the delivery client validates its configuration at module load and throws otherwise.
 
-```bash
-CONTENTSTACK_API_KEY=blt...              # Settings > Tokens > Stack API Key
-CONTENTSTACK_DELIVERY_TOKEN=cs...        # Settings > Tokens > Delivery Token
-CONTENTSTACK_ENVIRONMENT=development     # must match a Contentstack environment
-CONTENTSTACK_REGION=EU                   # NA | EU | AU | AZURE_NA | AZURE_EU | GCP_NA | GCP_EU
-CONTENTSTACK_WEBHOOK_SECRET=...          # shared with the Contentstack webhook
-SITE_URL=https://example.com             # optional, see below
-```
+| Variable | Required | Notes |
+|---|---|---|
+| `CONTENTSTACK_API_KEY` | yes | Settings → Tokens → Stack API Key |
+| `CONTENTSTACK_DELIVERY_TOKEN` | yes | Settings → Tokens → Delivery Tokens |
+| `CONTENTSTACK_ENVIRONMENT` | yes | Must match an environment name |
+| `CONTENTSTACK_REGION` | yes | `NA` `EU` `AU` `AZURE_NA` `AZURE_EU` `GCP_NA` `GCP_EU` |
+| `CONTENTSTACK_WEBHOOK_SECRET` | yes | Shared with the webhook that calls `/api/revalidate` |
+| `CONTENTSTACK_PREVIEW_TOKEN` | no | Enables Live Preview and the Visual Builder |
+| `SITE_URL` | no | Absolute origin, see below |
+| `CONTENTSTACK_MANAGEMENT_TOKEN` | no | Only for `content-model:import` |
 
 `SITE_URL` is the absolute origin used by `robots.txt`, `sitemap.xml`, `llms.txt`, the AI catalog and `metadataBase`. It falls back to `VERCEL_PROJECT_PRODUCTION_URL` and then to `http://localhost:3000`. It is read **at build time**, because those routes are prerendered: setting it only at runtime leaves localhost urls baked into the output.
 
 `CONTENTSTACK_REGION` is required on purpose. The SDK defaults to the US data center, so an unset region silently points a non-US stack at the wrong host.
 
-None of these carry the `NEXT_PUBLIC_` prefix: every read happens on the server. Live Preview would need public copies of the API key and a preview token, which is not set up yet.
+None of these carry the `NEXT_PUBLIC_` prefix: every read happens on the server, including the Live Preview init, which receives the api key as a prop from a server component.
 
 ## Scripts
 
@@ -46,6 +52,8 @@ None of these carry the `NEXT_PUBLIC_` prefix: every read happens on the server.
 | `pnpm lint` | ESLint |
 | `pnpm test` | Vitest, single run |
 | `pnpm test:watch` | Vitest, watch mode |
+| `pnpm dev:https` | Dev server over https, required by the Live Preview iframe |
+| `pnpm content-model:import` | Creates the content types and global field in the stack |
 
 `typecheck` runs `next typegen` first because `LayoutProps` and `PageProps` are generated into `.next/types`. Plain `tsc` fails on a fresh clone.
 
@@ -63,8 +71,8 @@ site_config (singleton)          header                  footer
     └── inline_head_html
 
 page                             blog_post               seo_metadata (global field)
-├── title                        ├── blog_post_title     ├── meta_title
-├── url          "/" , "/about"  ├── slug                ├── meta_description
+├── title                        ├── title               ├── meta_title
+├── url          "/" , "/about"  ├── url   "/blog/slug"  ├── meta_description
 ├── seo ─────────────────────────┤ cover_image           ├── og_image
 ├── header  (optional override)  ├── published_date      └── no_index
 ├── footer  (optional override)  ├── body (JSON RTE)
@@ -74,6 +82,10 @@ page                             blog_post               seo_metadata (global fi
     ├── feature_grid
     └── post_list → blog_post
 ```
+
+The schemas live in `content-model/`, one file per content type plus the global field. `pnpm content-model:import` posts them to the Management API in dependency order and skips anything that already exists, so it is safe to re-run after adding a type. It needs `CONTENTSTACK_MANAGEMENT_TOKEN`; nothing at runtime does.
+
+Both `page` and `blog_post` are addressed by a full `url` rather than a slug, because that is the field the Live Preview panel resolves an entry by.
 
 Decisions worth knowing:
 
@@ -88,6 +100,7 @@ Decisions worth knowing:
 lib/contentstack/      transport, agnostic of content type
   client.ts            SDK init, env validation, region resolution
   queries.ts           findEntries / findEntryBySlug with where, ordering, pagination
+  preview.ts           per-request Live Preview client, preview hosts
   image.ts             Image Delivery API url building
   image-loader.ts      custom next/image loader
   rich-text.ts         JSON RTE to HTML
@@ -105,6 +118,9 @@ components/            presentation, prop-driven and testable
   ui/                  shadcn components
 
 app/                   routes stay thin: params, metadata, Suspense, notFound
+
+content-model/         content type and global field schemas as JSON
+scripts/               one-off tooling, not part of the build
 ```
 
 The data layer throws; routes decide what to show. `lib/result.ts` provides `attempt()` so JSX never sits inside a `try/catch`, which would only ever catch the await.
@@ -128,6 +144,18 @@ Every adapter calls `cacheLife("content")` and `cacheTag(...)`, so the window is
 | `site_config`, `header`, `footer` | `/` plus every shell tag |
 
 The route verifies a `Bearer` token against `CONTENTSTACK_WEBHOOK_SECRET` with a timing-safe digest comparison, and ignores payloads whose environment does not match `CONTENTSTACK_ENVIRONMENT`. Response codes are diagnostic: **401** means the secret diverges, **500** means it is unset on the server, and `{"revalidated": false, "reason": "ignored"}` means the environment did not match.
+
+## Live Preview
+
+Set `CONTENTSTACK_PREVIEW_TOKEN` and point the environment's base URL at the site. Everything else is already wired: without the token `LivePreviewSlot` renders nothing and the site behaves normally.
+
+Three details carry the whole flow, each working around a real constraint:
+
+- **`proxy.ts`** catches any request carrying `live_preview`, redirects once through `/api/draft` to enable draft mode, then forwards the hash as request **headers**. Vercel strips search params during ISR, draft mode included, so a query string would not survive. `HEAD` passes straight through, because the panel probes the url before loading the iframe and a redirect makes it report the page unreachable.
+- **`/api/draft`** re-issues the draft cookie as `SameSite=None`. Next sets it `Lax`, which the browser drops inside the panel's cross-site iframe.
+- **`createPreviewClient`** builds a fresh SDK instance per request. A shared one leaks an editor's draft into other visitors' responses.
+
+Locally the panel needs https, so use `pnpm dev:https`.
 
 ## Discovery routes
 
@@ -168,7 +196,7 @@ Images go through a custom `next/image` loader that rewrites each srcset entry i
 pnpm test
 ```
 
-168 tests across 24 files, covering pure helpers, the data layer with the SDK mocked, blog and layout components, section rendering, webhook payload resolution, and the error and empty states.
+179 tests across 26 files, covering pure helpers, the data layer with the SDK mocked, blog and layout components, section rendering, webhook payload resolution, and the error and empty states.
 
 Two deliberate choices in `vitest.setup.ts`:
 
@@ -194,10 +222,19 @@ Commits follow Conventional Commits.
 
 Vercel, with `CONTENTSTACK_*` set under Settings → Environment Variables for Production, Preview and Development. Without them the build fails while prerendering, since `generateStaticParams` reads from the Delivery API.
 
+## Starting a new project from this template
+
+What to change, roughly in order:
+
+1. `package.json` `name`, this README, and `SITE_NAME_FALLBACK` in `lib/content/site-config.ts` — the one place the site name is hardcoded.
+2. Tokens in `app/globals.css` and fonts in `lib/fonts.ts`. The values below are placeholders.
+3. The content model. Edit `content-model/`, add the file to `PLAN` in `scripts/import-content-model.mjs`, then write the matching adapter in `lib/content/` and component in `components/sections/`. Those three steps are what adding a section costs.
+4. Delete what the project does not need. The blog is four files under `components/blog/` plus `lib/content/blog-post.ts` and the two routes under `app/blog/`.
+
+One environment per deploy target, each with its own base URL and a delivery token scoped to it. A single environment pointing at localhost works for development and nothing else.
+
 ## Known gaps
 
 - Asset `alt` text falls back to the asset title, which Contentstack fills with the filename on upload. Fix the titles in Contentstack rather than in code.
-- No `.env.example`.
-- No preview token, so Live Preview and Visual Builder are not wired up.
-- A single Contentstack environment (`development`) whose base URL points at localhost. Production needs its own environment and a delivery token scoped to it.
 - The header and footer render from the site default. The per-page override exists in the schema but the root layout does not read the current route, so switching to per-page resolution means moving them out of the layout.
+- `content-model/` ships schemas, not entries. A fresh stack imports empty: the `site_config` singleton, a header, a footer and a home `page` still have to be created by hand.

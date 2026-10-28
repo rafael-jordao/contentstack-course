@@ -1,0 +1,186 @@
+{
+  "content_type": {
+    "title": "Site Config",
+    "uid": "site_config",
+    "description": "Global site configuration: defaults and third-party scripts",
+    "options": {
+      "is_page": false,
+      "singleton": true,
+      "title": "title",
+      "sub_title": []
+    },
+    "schema": [
+      {
+        "display_name": "Title",
+        "uid": "title",
+        "data_type": "text",
+        "field_metadata": {
+          "_default": true,
+          "version": 3,
+          "description": "Internal label for this entry."
+        },
+        "mandatory": true,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Site Name",
+        "uid": "site_name",
+        "data_type": "text",
+        "field_metadata": {
+          "default_value": "",
+          "multiline": false,
+          "version": 3,
+          "description": "Shown in the header and used as the metadata title suffix."
+        },
+        "mandatory": true,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Logo",
+        "uid": "logo",
+        "data_type": "file",
+        "field_metadata": {
+          "description": "Default logo. A header can override it.",
+          "rich_text_type": "standard"
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Default Header",
+        "uid": "default_header",
+        "data_type": "reference",
+        "reference_to": ["header"],
+        "field_metadata": {
+          "ref_multiple": false,
+          "instruction": "Used by any page that does not set its own header.",
+          "description": "",
+          "ref_multiple_content_types": true
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Default Footer",
+        "uid": "default_footer",
+        "data_type": "reference",
+        "reference_to": ["footer"],
+        "field_metadata": {
+          "ref_multiple": false,
+          "instruction": "Used by any page that does not set its own footer.",
+          "description": "",
+          "ref_multiple_content_types": true
+        },
+        "mandatory": false,
+        "unique": false,
+        "multiple": false,
+        "non_localizable": false
+      },
+      {
+        "display_name": "Scripts",
+        "uid": "scripts",
+        "data_type": "group",
+        "multiple": false,
+        "mandatory": false,
+        "unique": false,
+        "field_metadata": {
+          "instruction": "Third-party scripts. Restrict edit access on this content type.",
+          "description": ""
+        },
+        "schema": [
+          {
+            "display_name": "GTM Container ID",
+            "uid": "gtm_container_id",
+            "data_type": "text",
+            "field_metadata": {
+              "default_value": "",
+              "multiline": false,
+              "version": 3,
+              "description": "For example GTM-ABC1234. Safest option."
+            },
+            "mandatory": false,
+            "unique": false,
+            "multiple": false,
+            "non_localizable": false
+          },
+          {
+            "display_name": "External Scripts",
+            "uid": "external_scripts",
+            "data_type": "group",
+            "multiple": true,
+            "mandatory": false,
+            "unique": false,
+            "field_metadata": {
+              "instruction": "Scripts loaded from a URL.",
+              "description": ""
+            },
+            "schema": [
+              {
+                "display_name": "Source URL",
+                "uid": "src",
+                "data_type": "text",
+                "field_metadata": {
+                  "default_value": "",
+                  "multiline": false,
+                  "version": 3,
+                  "description": "Must be https."
+                },
+                "mandatory": true,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              },
+              {
+                "display_name": "Loading Strategy",
+                "uid": "strategy",
+                "data_type": "text",
+                "display_type": "dropdown",
+                "enum": {
+                  "advanced": false,
+                  "choices": [
+                    { "value": "afterInteractive" },
+                    { "value": "lazyOnload" },
+                    { "value": "beforeInteractive" }
+                  ]
+                },
+                "field_metadata": {
+                  "default_value": "afterInteractive",
+                  "description": "afterInteractive suits analytics. Use beforeInteractive only when required."
+                },
+                "mandatory": false,
+                "unique": false,
+                "multiple": false,
+                "non_localizable": false
+              }
+            ],
+            "non_localizable": false
+          },
+          {
+            "display_name": "Inline Head HTML",
+            "uid": "inline_head_html",
+            "data_type": "text",
+            "field_metadata": {
+              "default_value": "",
+              "multiline": true,
+              "version": 3,
+              "description": "Escape hatch for raw markup. Anything here runs on every page."
+            },
+            "mandatory": false,
+            "unique": false,
+            "multiple": false,
+            "non_localizable": false
+          }
+        ],
+        "non_localizable": false
+      }
+    ]
+  }
+}
