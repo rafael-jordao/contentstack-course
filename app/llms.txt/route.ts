@@ -1,11 +1,11 @@
 import { getBlogPosts } from "@/lib/content/blog-post";
-import { getSiteConfig } from "@/lib/content/site-config";
+import { getSiteConfig, SITE_NAME_FALLBACK } from "@/lib/content/site-config";
 import { absoluteUrl } from "@/lib/site-url";
 
 export async function GET() {
   const [config, posts] = await Promise.all([getSiteConfig(), getBlogPosts()]);
 
-  const siteName = config?.siteName ?? "Contentstack Course";
+  const siteName = config?.siteName ?? SITE_NAME_FALLBACK;
 
   const lines = [
     `# ${siteName}`,

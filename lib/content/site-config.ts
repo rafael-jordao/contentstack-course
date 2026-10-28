@@ -9,7 +9,8 @@ import { HEADER_CONTENT_TYPE, type Header } from "@/lib/content/header";
 
 export const SITE_CONFIG_CONTENT_TYPE = "site_config";
 
-export const SITE_NAME_FALLBACK = "Contentstack Course";
+/** Used until an editor fills `site_name` in the `site_config` entry. */
+export const SITE_NAME_FALLBACK = "Next.js + Contentstack";
 
 export type ScriptStrategy = "afterInteractive" | "lazyOnload" | "beforeInteractive";
 
